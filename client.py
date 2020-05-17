@@ -1,5 +1,6 @@
 import socket
 import sys
+import tictactoe
 from os import path
 
 def client_program():
@@ -38,8 +39,9 @@ def client_program():
                 continue
 
             readyState = raw_input(" READY? ")
+            readyState = str(readyState)
 
-            if(readyState != "Yes"):
+            if(not (readyState.startswith('y') or readyState.startswith('Y'))):
                 message = raw_input(" What game you want to play? ")
                 continue
 
@@ -53,29 +55,23 @@ def client_program():
             print(result)
 
             message = raw_input(" What else? ")
-        elif(command.startswith("uTake")):
-            filename = command.split(" ")[1]
+        elif(command == "TTT"):
+            client_socket.send("TTT")
 
-            if(not path.exists("store/"+filename)):
-                print("Cannot open or find the file.")
-                message = raw_input(" Command: ")
-                continue
+            while(1):
+                res = client_socket.recv(1024)
+                if(res == "Game Over"):
+                    break
+                elif(res == "Play Again?"):
+                    again = raw_input("Play Again? ")
+                    client_socket.send(again)
+                elif(res.startswith("X Turn") or res.startswith("That place")):
+                    move = raw_input(res)
+                    client_socket.send(move)
+                else:
+                    print(res)
 
-            client_socket.send(command)
 
-            reply = client_socket.recv(1024)
-
-            if(not reply == "OK"):
-                print ("Server not ready to receive file.")
-                message = raw_input(" Command: ")
-                continue
-
-            with open("store/" + filename, 'rb') as f:
-                    for data in f:
-                        client_socket.sendall(data)
-            client_socket.send("DONE")
-            print("Successfully sent file " + filename)
-            f.close()
             message = raw_input(" What else? ")
         else:
             print("Sorry, invalid command.")

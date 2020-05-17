@@ -1,6 +1,7 @@
 import socket
 import sys
 import os.path
+import tictactoe
 from os import path
 
 def server_program():
@@ -73,30 +74,10 @@ def server_program():
 
                 message = conn.recv(1024)
 
-            elif(message.startswith("uTake")):
-                directory = message.split(" ")[1]
+            elif(message == "TTT"):
+                totalGame,clientWin,serverWin,lastResult = tictactoe.game(conn, totalGame, clientWin, serverWin, lastResult)
 
-                if(not message.startswith("uTake")):
-                    conn.send("Not ready for the file")
-                    continue
-                else:
-                    conn.send("OK")
-                    f = open("received/" + directory, 'wb', 0)
-                    
-                    while True:
-                        data = conn.recv(1024)
-                        if data == "DONE" or not data:
-                            break
-                        elif data.endswith("DONE"):
-                            f.write(data[:-4])
-                            break
-                        else:
-                            f.write(data)
-
-                    f.close()
-                    print("Successfully received file " + directory)
-
-                    message = conn.recv(1024)
+                message = conn.recv(1024)
 
             else:
                 print("Invalid Command!")
